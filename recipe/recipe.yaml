@@ -32,7 +32,7 @@ source:
     - patches/0001-earcut-standard-headers.patch
 
 build:
-  number: 0
+  number: 1
   # MPI-variant build string, per conda-forge convention for MPI-linked packages.
   string: mpi_${{ mpi }}_${{ hash }}_${{ build_number }}
   # mpich/openmpi are not built for win-64 on conda-forge, and the FCM build
