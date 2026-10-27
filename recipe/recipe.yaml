@@ -30,9 +30,17 @@ source:
     # <cstddef> while using std::tuple_element / std::get / std::size_t, which
     # current libstdc++ no longer exposes transitively.
     - patches/0001-earcut-standard-headers.patch
+    # CMesh::createHashes converts (coordinate - bound) / precision straight from
+    # double to size_t. A negative value makes that conversion undefined: x86-64
+    # wraps it, aarch64 saturates it to 0. On aarch64 every node with a negative
+    # longitude (or negative planar x/y) then gets the same hash, the UGRID
+    # edge/node tables come out inconsistent, and writing any edge- or
+    # node-located field segfaults in CMesh::createMeshEpsilon. Converting via
+    # long long gives the x86-64 result on every platform.
+    - patches/0002-mesh-hash-signed-conversion.patch
 
 build:
-  number: 2
+  number: 3
   # MPI-variant build string, per conda-forge convention for MPI-linked packages.
   string: mpi_${{ mpi }}_${{ hash }}_${{ build_number }}
   # mpich/openmpi are not built for win-64 on conda-forge, and the FCM build
@@ -85,6 +93,18 @@ tests:
     files:
       recipe:
         - test_xios.sh
+  - script:
+      - bash test_ugrid.sh
+    requirements:
+      run:
+        - ${{ compiler('fortran') }}
+        - ${{ compiler('cxx') }}
+    files:
+      recipe:
+        - test_ugrid.sh
+      source:
+        - src/test/test_ugrid.f90
+        - inputs/ugrid_test/iodef.xml
 
 about:
   # The old Trac forge at forge.ipsl.jussieu.fr is gone (it no longer answers at
