@@ -93,18 +93,23 @@ tests:
     files:
       recipe:
         - test_xios.sh
-  - script:
-      - bash test_ugrid.sh
-    requirements:
-      run:
-        - ${{ compiler('fortran') }}
-        - ${{ compiler('cxx') }}
-    files:
-      recipe:
-        - test_ugrid.sh
-      source:
-        - src/test/test_ugrid.f90
-        - inputs/ugrid_test/iodef.xml
+  # Linux only: on macOS (osx-64 and osx-arm64 alike) upstream's test_ugrid
+  # segfaults even with its own cell-only config, so that is a separate problem
+  # with running XIOS on macOS, not the mesh-hash bug this test guards.
+  - if: linux
+    then:
+      script:
+        - bash test_ugrid.sh
+      requirements:
+        run:
+          - ${{ compiler('fortran') }}
+          - ${{ compiler('cxx') }}
+      files:
+        recipe:
+          - test_ugrid.sh
+        source:
+          - src/test/test_ugrid.f90
+          - inputs/ugrid_test/iodef.xml
 
 about:
   # The old Trac forge at forge.ipsl.jussieu.fr is gone (it no longer answers at
