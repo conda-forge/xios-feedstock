@@ -38,9 +38,14 @@ source:
     # node-located field segfaults in CMesh::createMeshEpsilon. Converting via
     # long long gives the x86-64 result on every platform.
     - patches/0002-mesh-hash-signed-conversion.patch
+    # CMesh's node/edge counts are MPI_Bcast as MPI_UNSIGNED_LONG into an int,
+    # so the broadcast writes 8 bytes into a 4-byte variable. Declare them
+    # unsigned long. Backported from upstream XIOS2 commit 8b6a14f (MR !51),
+    # without that commit's longitude-fold change, which 0002 makes redundant.
+    - patches/0003-mesh-bcast-unsigned-long.patch
 
 build:
-  number: 3
+  number: 4
   # MPI-variant build string, per conda-forge convention for MPI-linked packages.
   string: mpi_${{ mpi }}_${{ hash }}_${{ build_number }}
   # mpich/openmpi are not built for win-64 on conda-forge, and the FCM build
